@@ -35,12 +35,32 @@ export default function TextEditor(){
     },[])
 
     useEffect(()=>{
-        quill.on('text-change',(delta,oldDelta,source)=>{
-            if(source!=='user'){
-                
-            }
-        })
-    })
+        if(socket==null || quill==null) return
+        const handler=(delta)=>{
+            quill.updateContents(delta)
+        }
+        socket.on('receive-changes',handler)
+
+        return ()=>{
+            socket.off('receive-changes',handler)
+        }
+    },[socket,quill]);
+
+
+    useEffect(()=>{
+        if(socket==null || quill==null) return
+        const handler=(delta,oldDelta,source)=>{
+            if(source!=='user')return
+            socket.emit("send-changes",delta)
+        }
+        quill.on('text-change',handler)
+
+        return ()=>{
+            quill.off('text change',handler)
+        }
+    },[socket,quill]);
+
+
 
     return  <div className="container" ref={wrapperRef}></div>
     
