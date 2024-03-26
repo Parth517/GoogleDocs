@@ -11,6 +11,7 @@ import { useParams } from "react-router-dom";
 
 export default function TextEditor() {
 
+    const Save_Interval=2000
   const {id:documentId}=useParams()
   const [socket, setSocket] = useState();
   const [quill, setQuill] = useState();
@@ -30,6 +31,18 @@ export default function TextEditor() {
     })
     socket.emit('get-document',documentId)
   },[socket,quill,documentId]);
+
+
+  useEffect(()=>{
+    if (socket == null || quill == null)return;
+    const interval=setInterval(() => {
+        socket.emit('save-document',quill.getContents())
+    }, Save_Interval);
+
+    return()=>{
+      clearInterval(interval)  
+    }
+  },[socket,quill])
 
 
   const ToolBar_Options = [
